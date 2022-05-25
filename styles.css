@@ -7,27 +7,27 @@
   --hostile-hover: #e7535527;
 }
 
-#combat li.combatant.hostile, #combat li.combatant.active.hostile {
-    background: var(--hostile)
+.hostile {
+    background: var(--hostile) !important;
 }
 
-#combat li.combatant.hostile.hover, #combat li.combatant.active.hostile.hover {
-    background: var(--hostile-hover)
+.hostile.hover {
+    background: var(--hostile-hover) !important;
 }
 
-#combat li.combatant.neutral, #combat li.combatant.active.neutral {
-    background: var(--neutral)
+.neutral {
+    background: var(--neutral) !important;
 }
 
-#combat li.combatant.neutral.hover, #combat li.combatant.active.neutral.hover {
-    background: var(--neutral-hover)
+.neutral.hover {
+    background: var(--neutral-hover) !important;
 }
 
-#combat li.combatant.friendly, #combat li.combatant.active.friendly {
-    background: var(--friendly)
+.friendly {
+    background: var(--friendly) !important;
 }
 
-#combat li.combatant.friendly.hover, #combat li.combatant.active.friendly.hover {
-    background: var(--friendly-hover)
+.friendly.hover {
+    background: var(--friendly-hover) !important;
 }
 
