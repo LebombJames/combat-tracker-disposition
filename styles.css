@@ -1,33 +1,25 @@
 :root {
   --friendly: #43DFDF27;
-  --friendly-hover: #a7dfdf27;
   --neutral: #F1D83627;
-  --neutral-hover: #FFF87627;
   --hostile: #E7212427;
-  --hostile-hover: #e7535527;
 }
 
 .hostile {
     background: var(--hostile) !important;
 }
 
-.hostile.hover {
-    background: var(--hostile-hover) !important;
-}
-
 .neutral {
     background: var(--neutral) !important;
-}
-
-.neutral.hover {
-    background: var(--neutral-hover) !important;
 }
 
 .friendly {
     background: var(--friendly) !important;
 }
 
-.friendly.hover {
-    background: var(--friendly-hover) !important;
+.hover {
+    filter: brightness(125%) !important;
 }
 
+.hidden {
+    filter: brightness(75%) !important;
+}
