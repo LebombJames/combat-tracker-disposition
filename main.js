@@ -2,16 +2,12 @@ const dispositionColors = {
     FRIENDLY: "#" + CONFIG.Canvas.dispositionColors.FRIENDLY.toString(16) + "28",
     NEUTRAL: "#" + CONFIG.Canvas.dispositionColors.NEUTRAL.toString(16) + "28",
     HOSTILE: "#" + CONFIG.Canvas.dispositionColors.HOSTILE.toString(16) + "28"
-}
+};
 
 const r = document.querySelector(':root');
 r.style.setProperty('--friendly', dispositionColors.FRIENDLY);
 r.style.setProperty('--neutral', dispositionColors.NEUTRAL);
 r.style.setProperty('--hostile', dispositionColors.HOSTILE);
-
-Hooks.on('ready', () => {
-    console.log(dispositionColors);
-});
 
 function updateColors() {
     if (game.combat) {
