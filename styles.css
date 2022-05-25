@@ -1,0 +1,33 @@
+:root {
+  --friendly: #43DFDF27;
+  --friendly-hover: #a7dfdf27;
+  --neutral: #F1D83627;
+  --neutral-hover: #FFF87627;
+  --hostile: #E7212427;
+  --hostile-hover: #e7535527;
+}
+
+#combat li.combatant.hostile, #combat li.combatant.active.hostile {
+    background: var(--hostile)
+}
+
+#combat li.combatant.hostile.hover, #combat li.combatant.active.hostile.hover {
+    background: var(--hostile-hover)
+}
+
+#combat li.combatant.neutral, #combat li.combatant.active.neutral {
+    background: var(--neutral)
+}
+
+#combat li.combatant.neutral.hover, #combat li.combatant.active.neutral.hover {
+    background: var(--neutral-hover)
+}
+
+#combat li.combatant.friendly, #combat li.combatant.active.friendly {
+    background: var(--friendly)
+}
+
+#combat li.combatant.friendly.hover, #combat li.combatant.active.friendly.hover {
+    background: var(--friendly-hover)
+}
+
