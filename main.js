@@ -5,13 +5,13 @@ const dispositionColors = {
 }
 
 const r = document.querySelector(':root');
-r.style.setProperty('--friendly', dispositionColors.FRIENDLY)
-r.style.setProperty('--neutral', dispositionColors.NEUTRAL)
-r.style.setProperty('--hostile', dispositionColors.HOSTILE)
+r.style.setProperty('--friendly', dispositionColors.FRIENDLY);
+r.style.setProperty('--neutral', dispositionColors.NEUTRAL);
+r.style.setProperty('--hostile', dispositionColors.HOSTILE);
 
 Hooks.on('ready', () => {
     console.log(dispositionColors);
-})
+});
 
 function updateColors() {
     if (game.combat) {
@@ -21,7 +21,7 @@ function updateColors() {
                 combatantRow.toggleClass("hostile", combatant.token.data.disposition === -1);
                 combatantRow.toggleClass("neutral", combatant.token.data.disposition === 0);
                 combatantRow.toggleClass("friendly", combatant.token.data.disposition === 1);
-            }
+            };
         };
     };
 };
