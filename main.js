@@ -12,7 +12,6 @@ r.style.setProperty('--hostile', dispositionColors.HOSTILE);
 function updateColors() {
     if (game.combat) {
         for (const combatant of game.combat.combatants) {
-            console.log("run")
             const combatantRow = $('#combat-tracker, #combat-popout').find(`[data-combatant-id=${combatant.id}]`);
             combatantRow.toggleClass("hostile",  combatant.token.data.disposition === -1);
             combatantRow.toggleClass("neutral",  combatant.token.data.disposition === 0);
