@@ -12,13 +12,21 @@ r.style.setProperty('--hostile', dispositionColors.HOSTILE);
 function updateColors() {
     if (game.combat) {
         for (const combatant of game.combat.combatants) {
-            if (combatant.token) {
-                const combatantRow = $('#combat-tracker, #combat-popout').find(`[data-combatant-id=${combatant.id}]`);
-                combatantRow.toggleClass("hostile", combatant.token.data.disposition === -1);
-                combatantRow.toggleClass("neutral", combatant.token.data.disposition === 0);
-                combatantRow.toggleClass("friendly", combatant.token.data.disposition === 1);
-            };
+            console.log("run")
+            const combatantRow = $('#combat-tracker, #combat-popout').find(`[data-combatant-id=${combatant.id}]`);
+            combatantRow.toggleClass("hostile",  combatant.token.data.disposition === -1);
+            combatantRow.toggleClass("neutral",  combatant.token.data.disposition === 0);
+            combatantRow.toggleClass("friendly", combatant.token.data.disposition === 1);
         };
+    };
+};
+
+function updateColorsToken(token) {
+    if (game.combat) {
+        const combatantRow = $('#combat-tracker, #combat-popout').find(`[data-combatant-id=${token.combatant.id}]`);
+        combatantRow.toggleClass("hostile",  token.data.disposition === -1);
+        combatantRow.toggleClass("neutral",  token.data.disposition === 0);
+        combatantRow.toggleClass("friendly", token.data.disposition === 1);
     };
 };
 
@@ -28,6 +36,6 @@ Hooks.on('renderCombatTracker', () => {
 
 Hooks.on('updateToken', (token, update) => {
     if (token.inCombat && !isNaN(update.disposition)) {
-        updateColors();
+        updateColorsToken(token);
     };
 });
