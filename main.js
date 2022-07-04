@@ -122,7 +122,8 @@ class customColourMenu extends FormApplication {
             template: `modules/combat-tracker-disposition/templates/custom-colours.html`,
             id: 'custom-colours',
             title: 'Custom Colours',
-            width: 300
+            width: 300,
+            height: 175
         });
     };
 
