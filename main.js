@@ -1,11 +1,5 @@
 const MODULE = "combat-tracker-disposition"
-
-const dispositionColors = { //Take the base 10 number, convert it to hexadecimal and add a # to the start
-    FRIENDLY: "#" + CONFIG.Canvas.dispositionColors.FRIENDLY.toString(16),
-    NEUTRAL: "#" + CONFIG.Canvas.dispositionColors.NEUTRAL.toString(16),
-    HOSTILE: "#" + CONFIG.Canvas.dispositionColors.HOSTILE.toString(16)
-};
-
+let dispositionColors = {}
 Hooks.on("init", () => {
     game.settings.registerMenu(MODULE, "customColours", {
         name: "Custom Colours",
@@ -19,9 +13,9 @@ Hooks.on("init", () => {
         scope: "world",
         config: false,
         type: String,
-        default: dispositionColors.HOSTILE,
-        onChange: () => {
-            setColors();
+        default: "#" + CONFIG.Canvas.dispositionColors.HOSTILE.toString(16),
+        onChange: (value) => {
+            dispositionColors.HOSTILE = value;
             updateColors();
         }
     });
@@ -30,9 +24,9 @@ Hooks.on("init", () => {
         scope: "world",
         config: false,
         type: String,
-        default: dispositionColors.NEUTRAL,
-        onChange: () => {
-            setColors();
+        default: "#" + CONFIG.Canvas.dispositionColors.NEUTRAL.toString(16),
+        onChange: (value) => {
+            dispositionColors.NEUTRAL = value;
             updateColors();
         }
     });
@@ -41,9 +35,9 @@ Hooks.on("init", () => {
         scope: "world",
         config: false,
         type: String,
-        default: dispositionColors.FRIENDLY,
-        onChange: () => {
-            setColors();
+        default: "#" + CONFIG.Canvas.dispositionColors.FRIENDLY.toString(16),
+        onChange: (value) => {
+            dispositionColors.FRIENDLY = value;
             updateColors();
         }
     });
@@ -61,38 +55,49 @@ Hooks.on("init", () => {
             step: 5
         },
         onChange: () => {
-            setColors();
             updateColors();
         }
     });
-    setColors();
-})
+    
+    dispositionColors = { //Take the base 10 number, convert it to hexadecimal and add a # to the start
+        FRIENDLY: game.settings.get(MODULE, "friendlyColour"),
+        NEUTRAL: game.settings.get(MODULE, "neutralColour"),
+        HOSTILE: game.settings.get(MODULE, "hostileColour")
+    }
+});
 
-
-function setColors() {//Send the colour settings to the CSS
-    const r = document.querySelector(':root');
-    r.style.setProperty('--friendly', game.settings.get(MODULE, "friendlyColour") + game.settings.get(MODULE, "opacity").toString(16) /*Convert the base 10 opacity number to hexadecimal*/);
-    r.style.setProperty('--neutral', game.settings.get(MODULE, "neutralColour") + game.settings.get(MODULE, "opacity").toString(16));
-    r.style.setProperty('--hostile', game.settings.get(MODULE, "hostileColour") + game.settings.get(MODULE, "opacity").toString(16));
+function getColor(disposition) {
+    const opacity = game.settings.get(MODULE, "opacity").toString(16);
+    switch (disposition) {
+        case -1:
+            return dispositionColors.HOSTILE + opacity;
+            break;
+        case 0:
+            return dispositionColors.NEUTRAL + opacity;
+            break;
+        case 1:
+            return dispositionColors.FRIENDLY + opacity;
+            break;
+    }
 }
 
 function updateColors() {//Set the colours when the combat tracker is rendered
     if (game.combat) {
         for (const combatant of game.combat.combatants) {
-            const combatantRow = $('#combat-tracker, #combat-popout').find(`[data-combatant-id=${combatant.id}]`);
-            combatantRow.toggleClass("hostile",  combatant.token.data.disposition === -1);
-            combatantRow.toggleClass("neutral",  combatant.token.data.disposition === 0);
-            combatantRow.toggleClass("friendly", combatant.token.data.disposition === 1);
+            const combatantRows = document.querySelectorAll(`:is(#combat-tracker, #combat-popout) [data-combatant-id="${combatant.id}"]`);
+            const color = getColor(combatant.token.data.disposition);
+            console.log(color)
+            combatantRows.forEach(row => row.style.background = color);
         };
     };
 };
 
-function updateColorsToken(token, update) {//Reset the colours if any token's disposition changes
+function updateColorsToken(token) {//Reset the colours if any token's disposition changes
     if (game.combat) {
-        const combatantRow = $('#combat-tracker, #combat-popout').find(`[data-combatant-id=${token.combatant.id}]`);
-        combatantRow.toggleClass("hostile",  update.disposition === -1);
-        combatantRow.toggleClass("neutral",  update.disposition === 0);
-        combatantRow.toggleClass("friendly", update.disposition === 1);
+        const combatantRows = document.querySelectorAll(`:is(#combat-tracker, #combat-popout) [data-combatant-id="${token.combatant.id}"]`);
+        const color = getColor(token.data.disposition);
+        console.log(color)
+        combatantRows.forEach(row => row.style.background = color);
     };
 };
 
@@ -102,14 +107,14 @@ Hooks.on('renderCombatTracker', () => {
 
 Hooks.on('updateToken', (token, update) => {
     if (token.inCombat && !isNaN(update.disposition)) {
-        updateColorsToken(token, update);
+        updateColorsToken(token);
     };
 });
 
 class customColourMenu extends FormApplication {
     constructor(...args) {
         super(...args);
-    }
+    };
 
     getData() {
         return super.getData;
@@ -122,8 +127,7 @@ class customColourMenu extends FormApplication {
             template: `modules/combat-tracker-disposition/templates/custom-colours.html`,
             id: 'custom-colours',
             title: 'Custom Colours',
-            width: 300,
-            height: 175
+            width: 300
         });
     };
 
