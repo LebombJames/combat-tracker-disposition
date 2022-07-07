@@ -59,7 +59,7 @@ Hooks.on("init", () => {
         }
     });
     
-    dispositionColors = { //Take the base 10 number, convert it to hexadecimal and add a # to the start
+    dispositionColors = { //On launch, set as the setting's value.
         FRIENDLY: game.settings.get(MODULE, "friendlyColour"),
         NEUTRAL: game.settings.get(MODULE, "neutralColour"),
         HOSTILE: game.settings.get(MODULE, "hostileColour")
@@ -85,8 +85,7 @@ function updateColors() {//Set the colours when the combat tracker is rendered
     if (game.combat) {
         for (const combatant of game.combat.combatants) {
             const combatantRows = document.querySelectorAll(`:is(#combat-tracker, #combat-popout) [data-combatant-id="${combatant.id}"]`);
-            const color = getColor(combatant.token.data.disposition);
-            console.log(color)
+            const color = getColor(combatant.token.disposition);
             combatantRows.forEach(row => row.style.background = color);
         };
     };
@@ -95,8 +94,7 @@ function updateColors() {//Set the colours when the combat tracker is rendered
 function updateColorsToken(token) {//Reset the colours if any token's disposition changes
     if (game.combat) {
         const combatantRows = document.querySelectorAll(`:is(#combat-tracker, #combat-popout) [data-combatant-id="${token.combatant.id}"]`);
-        const color = getColor(token.data.disposition);
-        console.log(color)
+        const color = getColor(token.disposition);
         combatantRows.forEach(row => row.style.background = color);
     };
 };
