@@ -1,14 +1,15 @@
 const MODULE = "combat-tracker-disposition"
 let dispositionColors = {}
+
 Hooks.on("init", () => {
     game.settings.registerMenu(MODULE, "customColours", {
         name: "Custom Colours",
         label: "Configure Custom Colours",
         hint: "Change the colour of each disposition in the combat tracker.",
         icon: "fas fa-paint-roller",
-        type: customColourMenu
+        type: CustomColourMenu
     });
-    
+
     game.settings.register(MODULE, "hostileColour", {
         scope: "world",
         config: false,
@@ -19,7 +20,7 @@ Hooks.on("init", () => {
             updateColors();
         }
     });
-    
+
     game.settings.register(MODULE, "neutralColour", {
         scope: "world",
         config: false,
@@ -30,7 +31,7 @@ Hooks.on("init", () => {
             updateColors();
         }
     });
-    
+
     game.settings.register(MODULE, "friendlyColour", {
         scope: "world",
         config: false,
@@ -41,14 +42,14 @@ Hooks.on("init", () => {
             updateColors();
         }
     });
-    
+
     game.settings.register(MODULE, "opacity", {
         scope: "world",
         config: true,
         type: Number,
         name: "Opacity",
-        hint: "Configure the opacity of the background colour. Default 40.",
-        default: 40,
+        hint: "Configure the opacity of the background colour. Default 50.",
+        default: 50,
         range: {
             min: 0,
             max: 100,
@@ -58,7 +59,7 @@ Hooks.on("init", () => {
             updateColors();
         }
     });
-    
+
     dispositionColors = { //On launch, set as the setting's value.
         FRIENDLY: game.settings.get(MODULE, "friendlyColour"),
         NEUTRAL: game.settings.get(MODULE, "neutralColour"),
@@ -66,18 +67,22 @@ Hooks.on("init", () => {
     }
 });
 
-function getColor(disposition) {
+function getColor(combatant, disposition) {
     const opacity = game.settings.get(MODULE, "opacity").toString(16);
-    switch (disposition) {
-        case -1:
-            return dispositionColors.HOSTILE + opacity;
-            break;
-        case 0:
-            return dispositionColors.NEUTRAL + opacity;
-            break;
-        case 1:
-            return dispositionColors.FRIENDLY + opacity;
-            break;
+    if (combatant.getFlag(MODULE, "colorEnabled")) {
+        return combatant.getFlag(MODULE, "color") + opacity;
+    } else {
+        switch (disposition) {
+            case -1:
+                return dispositionColors.HOSTILE + opacity;
+                break;
+            case 0:
+                return dispositionColors.NEUTRAL + opacity;
+                break;
+            case 1:
+                return dispositionColors.FRIENDLY + opacity;
+                break;
+        }
     }
 }
 
@@ -85,16 +90,16 @@ function updateColors() {//Set the colours when the combat tracker is rendered
     if (game.combat) {
         for (const combatant of game.combat.combatants) {
             const combatantRows = document.querySelectorAll(`:is(#combat-tracker, #combat-popout) [data-combatant-id="${combatant.id}"]`);
-            const color = getColor(combatant.token.disposition);
+            const color = getColor(combatant, combatant.token.disposition);
             combatantRows.forEach(row => row.style.background = color);
         };
     };
 };
 
-function updateColorsToken(token) {//Reset the colours if any token's disposition changes
+function updateColorsToken(token) {//Re-set the colours if any token's disposition changes
     if (game.combat) {
         const combatantRows = document.querySelectorAll(`:is(#combat-tracker, #combat-popout) [data-combatant-id="${token.combatant.id}"]`);
-        const color = getColor(token.disposition);
+        const color = getColor(token.combatant, token.disposition);
         combatantRows.forEach(row => row.style.background = color);
     };
 };
@@ -109,7 +114,43 @@ Hooks.on('updateToken', (token, update) => {
     };
 });
 
-class customColourMenu extends FormApplication {
+Hooks.on('renderCombatantConfig', (config, html, dialog) => {
+    const div = document.createElement("div");
+    div.classList.add("form-group");
+
+    const label = document.createElement("label");
+    label.innerHTML = "Color Override";
+    label.for = "color-enabled"
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.id = "color-enabled"
+    checkbox.checked = config.object.getFlag(MODULE, "colorEnabled")
+    checkbox.classList.add("form-fields");
+
+    const color = document.createElement("input");
+    color.type = "color";
+    color.id = "combatant-color"
+    color.value = config.object.getFlag(MODULE, "color")
+    color.classList.add("form-fields");
+
+    div.appendChild(label);
+    div.appendChild(checkbox);
+    div.appendChild(color);
+
+    let sumbitButton = html[0].querySelector("button[type=submit]");
+    sumbitButton.insertAdjacentElement("beforebegin", div);
+});
+
+Hooks.on('closeCombatantConfig', async (config, html) => {
+    let checkbox = html[0].querySelector("input[id=color-enabled]").checked;
+    let color = html[0].querySelector("input[id=combatant-color]").value;
+
+    await config.object.setFlag(MODULE, "colorEnabled", checkbox);
+    await config.object.setFlag(MODULE, "color", color);
+});
+
+class CustomColourMenu extends FormApplication {
     constructor(...args) {
         super(...args);
     };
@@ -137,8 +178,8 @@ class customColourMenu extends FormApplication {
     };
 
     async _updateObject(event, formData) {
-        game.settings.set(MODULE, "hostileColour", formData["hostile-colour"]);
-        game.settings.set(MODULE, "neutralColour", formData["neutral-colour"]);
-        game.settings.set(MODULE, "friendlyColour", formData["friendly-colour"]);
+        await game.settings.set(MODULE, "hostileColour", formData["hostile-colour"]);
+        await game.settings.set(MODULE, "neutralColour", formData["neutral-colour"]);
+        await game.settings.set(MODULE, "friendlyColour", formData["friendly-colour"]);
     };
 };
