@@ -69,8 +69,8 @@ Hooks.on("init", () => {
 
 function getColor(combatant, disposition) {
     const opacity = game.settings.get(MODULE, "opacity").toString(16);
-    if (combatant.getFlag(MODULE, "colorEnabled")) {
-        return combatant.getFlag(MODULE, "color") + opacity;
+    if (combatant.getFlag(MODULE, "override")?.enabled) {
+        return combatant.getFlag(MODULE, "override")?.color + opacity;
     } else {
         switch (disposition) {
             case -1:
@@ -109,12 +109,12 @@ Hooks.on('renderCombatTracker', () => {
 });
 
 Hooks.on('updateToken', (token, update) => {
-    if (token.inCombat && !isNaN(update.disposition)) {
+    if (token.inCombat && "disposition" in update) {
         updateColorsToken(token);
     };
 });
 
-Hooks.on('renderCombatantConfig', (config, html, dialog) => {
+Hooks.on('renderCombatantConfig', (app, html, dialog) => {
     const div = document.createElement("div");
     div.classList.add("form-group");
 
@@ -125,13 +125,13 @@ Hooks.on('renderCombatantConfig', (config, html, dialog) => {
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
     checkbox.id = "color-enabled"
-    checkbox.checked = config.object.getFlag(MODULE, "colorEnabled")
+    checkbox.checked = app.object.getFlag(MODULE, "override")?.enabled
     checkbox.classList.add("form-fields");
 
     const color = document.createElement("input");
     color.type = "color";
     color.id = "combatant-color"
-    color.value = config.object.getFlag(MODULE, "color")
+    color.value = app.object.getFlag(MODULE, "override")?.color
     color.classList.add("form-fields");
 
     div.appendChild(label);
@@ -140,14 +140,18 @@ Hooks.on('renderCombatantConfig', (config, html, dialog) => {
 
     let sumbitButton = html[0].querySelector("button[type=submit]");
     sumbitButton.insertAdjacentElement("beforebegin", div);
+
+    app.setPosition({ height: "auto" });
 });
 
-Hooks.on('closeCombatantConfig', async (config, html) => {
+Hooks.on('closeCombatantConfig', async (app, html) => {
     let checkbox = html[0].querySelector("input[id=color-enabled]").checked;
     let color = html[0].querySelector("input[id=combatant-color]").value;
 
-    await config.object.setFlag(MODULE, "colorEnabled", checkbox);
-    await config.object.setFlag(MODULE, "color", color);
+    await app.object.setFlag(MODULE, "override", {
+        enabled: checkbox,
+        color: color
+    });
 });
 
 class CustomColourMenu extends FormApplication {
