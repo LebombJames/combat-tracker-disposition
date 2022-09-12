@@ -1,8 +1,8 @@
 .hover {
-    filter: brightness(125%) !important;
-    z-index: calc(var(--z-index-app) - 1);
+  filter: brightness(125%) !important;
+  z-index: calc(var(--z-index-app) - 1);
 }
 
 .hidden {
-    filter: brightness(75%) !important;
+  filter: brightness(75%) !important;
 }
