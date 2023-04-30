@@ -1,6 +1,7 @@
 .hover {
-  filter: brightness(125%) !important;
+  backdrop-filter: brightness(150%) !important;
   z-index: calc(var(--z-index-app) - 1);
+  transition: backdrop-filter .2s;
 }
 
 .hidden {
