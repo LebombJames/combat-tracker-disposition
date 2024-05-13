@@ -1,21 +1,22 @@
 {
+  "id": "combat-tracker-disposition",
   "title": "Combat Tracker Disposition",
   "description": "Highlight combatants with their token disposition.",
-  "manifest": "https://raw.githubusercontent.com/LebombJames/combat-tracker-disposition/v1.4.0/module.json",
-  "download": "https://github.com/LebombJames/combat-tracker-disposition/archive/v1.4.0.zip",
-  "url": "https://github.com/LebombJames/combat-tracker-disposition",
+  "version": "v1.5.0",
   "authors": [
     {
       "name": "LebombJames",
-      "discord": "LebombJames#1611"
+      "url": "https://github.com/LebombJames",
+      "discord": "lebombjames1"
     }
   ],
-  "version": "v1.4.0",
-  "esmodules": ["combat-tracker-disposition.js"],
-  "styles": ["styles.css"],
-  "id": "combat-tracker-disposition",
   "compatibility": {
-    "minimum": "10",
-    "verified": "10.291"
-  }
+    "minimum": "12",
+    "verified": "12.322"
+  },
+  "url": "https://github.com/LebombJames/combat-tracker-disposition",
+  "manifest": "https://raw.githubusercontent.com/LebombJames/combat-tracker-disposition/main/module.json",
+  "download": "https://github.com/LebombJames/combat-tracker-disposition/archive/v1.5.0.zip",
+  "esmodules": ["combat-tracker-disposition.js"],
+  "styles": ["combat-tracker-disposition.css"]
 }

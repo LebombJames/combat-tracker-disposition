@@ -1,9 +1,13 @@
-.hover {
+.combatant.hover {
   backdrop-filter: brightness(150%) !important;
   z-index: calc(var(--z-index-app) - 1);
   transition: backdrop-filter .2s;
 }
 
-.hidden {
+div#combat-popout .combatant.hover {
+  backdrop-filter: brightness(300%) !important;
+}
+
+.combatant.hidden {
   filter: brightness(75%) !important;
 }

@@ -88,7 +88,7 @@ Hooks.on("init", () => {
     });
 
     dispositionColors = {
-        //On launch, set as the setting's value.
+        // On launch, set as the setting's value.
         FRIENDLY: game.settings.get(MODULE, "friendlyColour"),
         NEUTRAL: game.settings.get(MODULE, "neutralColour"),
         HOSTILE: game.settings.get(MODULE, "hostileColour"),
@@ -99,8 +99,11 @@ Hooks.on("init", () => {
 
 function getColor(combatant, disposition) {
     const opacity = dispositionColors.OPACITY;
-    if (dispositionColors.DEFEATED && combatant.defeated) return dispositionColors.DEFEATED + opacity;
-    if (combatant.actor.getFlag(MODULE, "override")?.enabled) return combatant.actor.getFlag(MODULE, "override")?.color + opacity;
+
+    if (combatant.defeated && dispositionColors.DEFEATED) return dispositionColors.DEFEATED + opacity;
+
+    const actorOverride = combatant.actor.getFlag(MODULE, "override");
+    if (actorOverride?.enabled) return actorOverride?.color + opacity;
     else {
         switch (disposition) {
             case -1:
@@ -114,12 +117,14 @@ function getColor(combatant, disposition) {
 }
 
 function updateColors() {
-    //Set the colours when the combat tracker is rendered
+    // Set the colours when the combat tracker is rendered
     if (!game.combat) return;
+
     for (const combatant of game.combat.combatants) {
         const combatantRows = document.querySelectorAll(
             `:is(#combat-tracker, #combat-popout) [data-combatant-id="${combatant.id}"]`
         );
+
         const color = getColor(combatant, combatant.token.disposition);
         for (let row of combatantRows) {
             row.style.background = color;
@@ -134,19 +139,18 @@ Hooks.on("renderCombatantConfig", (app, html) => {
     div.classList.add("form-group");
 
     const label = document.createElement("label");
-    label.innerHTML = "Color Override";
-    label.for = "color-enabled";
+    label.innerHTML = "Colour Override";
 
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
-    checkbox.id = "color-enabled";
+    checkbox.name = "color-enabled";
     checkbox.checked = app.object.actor.getFlag(MODULE, "override")?.enabled;
     checkbox.classList.add("form-fields");
 
-    const color = document.createElement("input");
-    color.type = "color";
-    color.id = "combatant-color";
-    color.value = app.object.actor.getFlag(MODULE, "override")?.color;
+    const color = document.createElement("color-picker");
+    color.name = "combatant-color";
+    color.value = app.object.actor.getFlag(MODULE, "override")?.color || "#000000";
+    color.placeholder = "#000000";
     color.classList.add("form-fields");
 
     div.appendChild(label);
@@ -160,12 +164,12 @@ Hooks.on("renderCombatantConfig", (app, html) => {
 });
 
 Hooks.on("closeCombatantConfig", async (app, html) => {
-    let checkbox = html[0].querySelector("input[id=color-enabled]").checked;
-    let color = html[0].querySelector("input[id=combatant-color]").value;
+    let checkbox = html[0].querySelector("input[name=color-enabled]").checked;
+    let color = html[0].querySelector("color-picker[name=combatant-color]").value;
 
     await app.object.actor.setFlag(MODULE, "override", {
         enabled: checkbox,
-        color: color
+        color
     });
     updateColors();
 });
@@ -197,16 +201,35 @@ class CustomColourMenu extends FormApplication {
         });
     }
 
-    activateListeners(html) {
-        super.activateListeners(html);
+    activateListeners($html) {
+        super.activateListeners($html);
+        const [html] = $html;
+
+        html.querySelector("form.combat-tracker-disposition.custom-colour-form button.reset").addEventListener("click", this._onClickReset.bind(this));
+
+    }
+
+    _onClickReset(event) {
+        event.preventDefault();
+
+        const defaults = {
+            friendly: game.settings.settings.get(`${MODULE}.friendlyColour`).default,
+            neutral: game.settings.settings.get(`${MODULE}.neutralColour`).default,
+            hostile: game.settings.settings.get(`${MODULE}.hostileColour`).default,
+            defeated: game.settings.settings.get(`${MODULE}.defeatedColour`).default,
+        }
+
+        const colourDivs = this.form.querySelector("form.combat-tracker-disposition.custom-colour-form section.colour-selections").children;
+
+        for (const div of colourDivs) {
+            div.querySelector("color-picker").value = defaults[div.classList[1]]
+        }
     }
 
     async _updateObject(event, formData) {
-        await Promise.all([
-            game.settings.set(MODULE, "hostileColour", formData["hostile-colour"]),
-            game.settings.set(MODULE, "neutralColour", formData["neutral-colour"]),
-            game.settings.set(MODULE, "friendlyColour", formData["friendly-colour"]),
-            game.settings.set(MODULE, "defeatedColour", formData["defeated-colour"])
-        ]);
+        game.settings.set(MODULE, "hostileColour", formData["hostile-colour"])
+        game.settings.set(MODULE, "neutralColour", formData["neutral-colour"])
+        game.settings.set(MODULE, "friendlyColour", formData["friendly-colour"])
+        game.settings.set(MODULE, "defeatedColour", formData["defeated-colour"])
     }
 }
