@@ -9,15 +9,15 @@ import ApplicationV2 = foundry.applications.api.ApplicationV2
 import { DeepPartial } from "fvtt-types/utils";
 import fields = foundry.data.fields
 
-type DispositionColorField = fields.ColorField<{ required: true, initial: string, nullable: false }>
+type DispositionColorField = fields.ColorField<{ required: true, initial: string, nullable: false }, string>
 
 type DispositionColorsSchema = {
     friendly: DispositionColorField,
     hostile: DispositionColorField
     neutral: DispositionColorField,
-    opacity: fields.AlphaField<{ required: true }>,
-    defeatedEnabled: fields.BooleanField<{ required: true, initial: true }>,
-    defeatedColor: fields.ColorField<{ required: false, initial: string }>
+    opacity: fields.AlphaField<{ required: true, nullable: false }, number>,
+    defeatedEnabled: fields.BooleanField<{ required: true, initial: true, nullable: false }, boolean>,
+    defeatedColor: fields.ColorField<{ required: true, initial: string, nullable: true }, string>
 }
 
 type GlobalDispositionColors = {
@@ -34,12 +34,12 @@ let dispositionColors = {} as GlobalDispositionColors;
 export class CustomColorModel extends foundry.abstract.DataModel<DispositionColorsSchema, null, {}> {
     static override defineSchema(): DispositionColorsSchema {
         return {
-            friendly: new fields.ColorField<{ required: true, initial: string, nullable: false }>({ required: true, initial: "#" + CONFIG.Canvas.dispositionColors.FRIENDLY.toString(16), nullable: false }),
-            hostile: new fields.ColorField<{ required: true, initial: string, nullable: false }>({ required: true, initial: "#" + CONFIG.Canvas.dispositionColors.HOSTILE.toString(16), nullable: false }),
-            neutral: new fields.ColorField<{ required: true, initial: string, nullable: false }>({ required: true, initial: "#" + CONFIG.Canvas.dispositionColors.NEUTRAL.toString(16), nullable: false }),
-            defeatedEnabled: new fields.BooleanField({ required: true, initial: true }),
-            defeatedColor: new fields.ColorField({ required: false, initial: "#000000" }),
-            opacity: new fields.AlphaField({ required: true })
+            friendly: new fields.ColorField<{ required: true, initial: string, nullable: false }, string>({ required: true, initial: "#" + CONFIG.Canvas.dispositionColors.FRIENDLY.toString(16), nullable: false }),
+            hostile: new fields.ColorField<{ required: true, initial: string, nullable: false }, string>({ required: true, initial: "#" + CONFIG.Canvas.dispositionColors.HOSTILE.toString(16), nullable: false }),
+            neutral: new fields.ColorField<{ required: true, initial: string, nullable: false }, string>({ required: true, initial: "#" + CONFIG.Canvas.dispositionColors.NEUTRAL.toString(16), nullable: false }),
+            defeatedEnabled: new fields.BooleanField<{ required: true, initial: true, nullable: false }, boolean>({ required: true, initial: true, nullable: false }),
+            defeatedColor: new fields.ColorField<{ required: true, initial: string, nullable: true }, string>({ required: true, initial: "#000000", nullable: true }),
+            opacity: new fields.AlphaField<{ required: true, nullable: false }, number>({ required: true, nullable: false })
         }
 
     }
@@ -60,11 +60,16 @@ Hooks.on("init", () => {
         config: false,
         type: CustomColorModel,
         onChange: (value) => {
-            if (value.friendly instanceof Color) dispositionColors.friendly = value.friendly
+            dispositionColors.friendly = Color.from(value.friendly)
+            dispositionColors.neutral = Color.from(value.neutral)
+            dispositionColors.hostile = Color.from(value.hostile)
+            dispositionColors.defeatedColor = Color.from(value.defeatedColor)
+            dispositionColors.opacity = value.opacity
+            dispositionColors.defeatedEnabled = value.defeatedEnabled
         }
     })
 
-    dispositionColors = game.settings.get("combat-tracker-disposition", "customColorSettings") as CustomColorModel<DispositionColorsSchema>
+    dispositionColors = game.settings.get("combat-tracker-disposition", "customColorSettings");
 });
 
 function getColor(combatant: Combatant, disposition: CONST.TOKEN_DISPOSITIONS) {
