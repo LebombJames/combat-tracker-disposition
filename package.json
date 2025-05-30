@@ -1,0 +1,20 @@
+{
+  "name": "combat-tracker-disposition",
+  "version": "1.5.0",
+  "description": "Highlight combatants with their token disposition.",
+  "main": "combat-tracker-disposition.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LebombJames/combat-tracker-disposition.git"
+  },
+  "author": "LebombJames",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/LebombJames/combat-tracker-disposition/issues"
+  },
+  "homepage": "https://github.com/LebombJames/combat-tracker-disposition#readme",
+  "devDependencies": {
+    "fvtt-types": "github:League-of-Foundry-Developers/foundry-vtt-types#main",
+    "vite": "^6.3.5"
+  }
+}
