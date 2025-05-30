@@ -15,7 +15,7 @@ type DispositionColorsSchema = {
     friendly: DispositionColorField,
     hostile: DispositionColorField
     neutral: DispositionColorField,
-    opacity: fields.AlphaField<{ required: true, nullable: false }, number>,
+    opacity: fields.AlphaField<{ required: true, nullable: false, initial: number }, number>,
     defeatedEnabled: fields.BooleanField<{ required: true, initial: true, nullable: false }, boolean>,
     defeatedColor: fields.ColorField<{ required: true, initial: string, nullable: true }, string>
 }
@@ -39,7 +39,7 @@ export class CustomColorModel extends foundry.abstract.DataModel<DispositionColo
             neutral: new fields.ColorField<{ required: true, initial: string, nullable: false }, string>({ required: true, initial: "#" + CONFIG.Canvas.dispositionColors.NEUTRAL.toString(16), nullable: false }),
             defeatedEnabled: new fields.BooleanField<{ required: true, initial: true, nullable: false }, boolean>({ required: true, initial: true, nullable: false }),
             defeatedColor: new fields.ColorField<{ required: true, initial: string, nullable: true }, string>({ required: true, initial: "#000000", nullable: true }),
-            opacity: new fields.AlphaField<{ required: true, nullable: false }, number>({ required: true, nullable: false })
+            opacity: new fields.AlphaField<{ required: true, initial: number, nullable: false }, number>({ required: true, initial: 0.4, nullable: false })
         }
 
     }
