@@ -6,40 +6,47 @@ type LowercaseKeys<T> = {
 import HTMLColorPickerElement = foundry.applications.elements.HTMLColorPickerElement
 import HandlebarsApplicationMixin = foundry.applications.api.HandlebarsApplicationMixin
 import ApplicationV2 = foundry.applications.api.ApplicationV2
-import { DeepPartial } from "fvtt-types/utils";
+import { DeepPartial, PrettifyType } from "fvtt-types/utils";
 import fields = foundry.data.fields
 
-type DispositionColorField = fields.ColorField<{ required: true, initial: string, nullable: false }, string>
+type DispositionColorField = fields.ColorField<DispositionColorFieldOptions>
+type RequiredNullable = { required: true, nullable: false }
+type DispositionColorFieldOptions = RequiredNullable & { initial: string }
 
 type DispositionColorsSchema = {
     friendly: DispositionColorField,
     hostile: DispositionColorField
     neutral: DispositionColorField,
-    opacity: fields.AlphaField<{ required: true, nullable: false, initial: number }, number>,
-    defeatedEnabled: fields.BooleanField<{ required: true, initial: true, nullable: false }, boolean>,
-    defeatedColor: fields.ColorField<{ required: true, initial: string, nullable: true }, string>
+    opacity: fields.AlphaField<RequiredNullable & { initial: number }>,
+    defeatedEnabled: fields.BooleanField<RequiredNullable & { initial: true }>,
+    defeatedColor: fields.ColorField<DispositionColorFieldOptions>
 }
 
-type GlobalDispositionColors = {
-    friendly: Color,
-    hostile: Color
-    neutral: Color,
-    opacity: number,
-    defeatedEnabled: boolean,
-    defeatedColor: Color
-}
+type GlobalDispositionColors = PrettifyType<fields.SchemaField.InitializedData<DispositionColorsSchema>>
 
 let dispositionColors = {} as GlobalDispositionColors;
 
 export class CustomColorModel extends foundry.abstract.DataModel<DispositionColorsSchema, null, {}> {
     static override defineSchema(): DispositionColorsSchema {
         return {
-            friendly: new fields.ColorField<{ required: true, initial: string, nullable: false }, string>({ required: true, initial: "#" + CONFIG.Canvas.dispositionColors.FRIENDLY.toString(16), nullable: false }),
-            hostile: new fields.ColorField<{ required: true, initial: string, nullable: false }, string>({ required: true, initial: "#" + CONFIG.Canvas.dispositionColors.HOSTILE.toString(16), nullable: false }),
-            neutral: new fields.ColorField<{ required: true, initial: string, nullable: false }, string>({ required: true, initial: "#" + CONFIG.Canvas.dispositionColors.NEUTRAL.toString(16), nullable: false }),
-            defeatedEnabled: new fields.BooleanField<{ required: true, initial: true, nullable: false }, boolean>({ required: true, initial: true, nullable: false }),
-            defeatedColor: new fields.ColorField<{ required: true, initial: string, nullable: true }, string>({ required: true, initial: "#000000", nullable: true }),
-            opacity: new fields.AlphaField<{ required: true, initial: number, nullable: false }, number>({ required: true, initial: 0.4, nullable: false })
+            friendly: new fields.ColorField<DispositionColorFieldOptions>(
+                { required: true, initial: "#" + CONFIG.Canvas.dispositionColors.FRIENDLY.toString(16), nullable: false }
+            ),
+            hostile: new fields.ColorField<DispositionColorFieldOptions>(
+                { required: true, initial: "#" + CONFIG.Canvas.dispositionColors.HOSTILE.toString(16), nullable: false }
+            ),
+            neutral: new fields.ColorField<DispositionColorFieldOptions>(
+                { required: true, initial: "#" + CONFIG.Canvas.dispositionColors.NEUTRAL.toString(16), nullable: false }
+            ),
+            opacity: new fields.AlphaField<RequiredNullable & { initial: number }>(
+                { required: true, initial: 0.4, nullable: false }
+            ),
+            defeatedEnabled: new fields.BooleanField<RequiredNullable & { initial: true }>(
+                { required: true, initial: true, nullable: false }
+            ),
+            defeatedColor: new fields.ColorField<DispositionColorFieldOptions>(
+                { required: true, initial: "#000000", nullable: false }
+            )
         }
 
     }
@@ -60,12 +67,7 @@ Hooks.on("init", () => {
         config: false,
         type: CustomColorModel,
         onChange: (value) => {
-            dispositionColors.friendly = Color.from(value.friendly)
-            dispositionColors.neutral = Color.from(value.neutral)
-            dispositionColors.hostile = Color.from(value.hostile)
-            dispositionColors.defeatedColor = Color.from(value.defeatedColor)
-            dispositionColors.opacity = value.opacity
-            dispositionColors.defeatedEnabled = value.defeatedEnabled
+            dispositionColors = value
         }
     })
 
@@ -73,24 +75,22 @@ Hooks.on("init", () => {
 });
 
 function getColor(combatant: Combatant, disposition: CONST.TOKEN_DISPOSITIONS) {
-    const opacity = dispositionColors.OPACITY;
+    const opacity = dispositionColors.opacity;
 
-    if (combatant.defeated && dispositionColors.DEFEATED) return dispositionColors.DEFEATED + opacity;
+    if (combatant.defeated && dispositionColors.defeatedEnabled) return dispositionColors.defeatedColor.toRGBA(opacity);
 
     const actorOverride = combatant.actor?.getFlag(MODULE, "override");
-    if (actorOverride?.enabled) return actorOverride?.color + opacity;
+    if (actorOverride?.enabled) return Color.from(actorOverride?.color).toRGBA(opacity);
     else {
         switch (disposition) {
-            case -2:
-                return "#00000000"
             case -1:
-                return dispositionColors.HOSTILE + opacity;
+                return dispositionColors.hostile.toRGBA(opacity);
             case 0:
-                return dispositionColors.NEUTRAL + opacity;
+                return dispositionColors.neutral.toRGBA(opacity);
             case 1:
-                return dispositionColors.FRIENDLY + opacity;
+                return dispositionColors.friendly.toRGBA(opacity);
             default:
-                return "#00000000"
+                return Color.from("#000000").toRGBA(0)
         }
     }
 }
@@ -100,8 +100,8 @@ function updateColors() {
     if (!game.combat) return;
 
     for (const combatant of game.combat.combatants) {
-        const combatantRows = document.querySelectorAll<HTMLElement>(
-            `:is(#combat-tracker, #combat-popout) [data-combatant-id="${combatant.id}"]`
+        const combatantRows = document.querySelectorAll<HTMLLIElement>(
+            `ol.combat-tracker [data-combatant-id="${combatant.id}"]`
         )
 
         if (!combatant.token || combatantRows.length === 0) continue;
@@ -142,7 +142,7 @@ Hooks.on("renderCombatantConfig", (app: CombatantConfig, html: HTMLFormElement) 
     div.appendChild(checkbox);
     div.appendChild(color);
 
-    let sumbitButton = html.querySelector("button[type=submit]");
+    let sumbitButton = html.querySelector<HTMLButtonElement>("button[type=submit]");
     sumbitButton?.insertAdjacentElement("beforebegin", div);
 
     app.setPosition({ height: "auto" });
@@ -162,7 +162,12 @@ Hooks.on("closeCombatantConfig", async (app: CombatantConfig, html: HTMLFormElem
 });
 
 declare namespace CustomColourMenu {
-    interface RenderContext extends ApplicationV2.RenderContext, LowercaseKeys<Omit<DispositionColorsSchema, "opacity">> { }
+    interface RenderContext extends ApplicationV2.RenderContext {
+        hostile: string,
+        neutral: string,
+        friendly: string,
+        defeated: string
+    }
 }
 
 class CustomColourMenu<
@@ -175,10 +180,10 @@ class CustomColourMenu<
     override async _prepareContext(options: ApplicationV2.RenderOptions) {
         let data = await super._prepareContext(options);
 
-        data.hostile = dispositionColors.HOSTILE;
-        data.neutral = dispositionColors.NEUTRAL;
-        data.friendly = dispositionColors.FRIENDLY;
-        data.defeated = dispositionColors.DEFEATED;
+        data.hostile = dispositionColors.hostile.css;
+        data.neutral = dispositionColors.neutral.css;
+        data.friendly = dispositionColors.friendly.css;
+        data.defeated = dispositionColors.defeatedColor.css;
 
         return data;
     }
@@ -200,7 +205,6 @@ class CustomColourMenu<
             template: `modules/combat-tracker-disposition/templates/custom-colours.hbs`,
         }
     }
-
 
     override async _onRender(context: DeepPartial<RenderContext>, options: DeepPartial<ApplicationV2.RenderOptions>) {
         super._onRender(context, options);
