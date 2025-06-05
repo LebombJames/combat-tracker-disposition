@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "types": ["fvtt-types/lenient"],
+        "target": "esnext",
+        "moduleResolution": "bundler",
+        "strict": true,
+        "module": "ESNext",
+        "strictNullChecks": true,
+        "strictFunctionTypes": true
+    },
+
+    "exclude": ["node_modules", "**/node_modules/*"]
+}
