@@ -17,7 +17,7 @@
   },
   "url": "https://github.com/LebombJames/combat-tracker-disposition",
   "manifest": "https://raw.githubusercontent.com/LebombJames/combat-tracker-disposition/main/module.json",
-  "download": "https://github.com/LebombJames/combat-tracker-disposition/archive/v2.0.0.zip",
+  "download": "https://github.com/LebombJames/combat-tracker-disposition/releases/download/v2.0.0/combat-tracker-disposition.zip",
   "esmodules": [
     "combat-tracker-disposition.mjs"
   ],
