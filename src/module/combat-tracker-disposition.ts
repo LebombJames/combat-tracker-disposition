@@ -166,7 +166,7 @@ Hooks.on("renderCombatantConfig", (app: foundry.applications.api.DocumentSheetV2
     const sumbitButton = el.querySelectorAll<HTMLButtonElement>(".form-group");
     sumbitButton[sumbitButton.length - 1]?.insertAdjacentElement("afterend", formGroup);
 
-    app.element.addEventListener("submit", async (event) => {
+    el.addEventListener("submit", async (event) => {
         const html = event.target as HTMLElement;
 
         if (!html) return;
