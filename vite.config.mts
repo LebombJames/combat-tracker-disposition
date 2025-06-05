@@ -4,7 +4,10 @@ import esbuild from "esbuild";
 import fs from "fs-extra"
 
 await fs.ensureDir("dist");
-fs.copyFileSync("./README.md", "./dist/README.md");
+await Promise.all([
+    fs.copyFile("./README.md", "./dist/README.md"),
+    fs.copyFile("./module.json", "./dist/module.json")
+])
 
 const config: Vite.UserConfig = {
   root: "src/",
