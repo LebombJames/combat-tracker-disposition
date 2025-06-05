@@ -1,0 +1,45 @@
+<section class="colour-selections">
+  <div class="form-group hostile">
+    <label for="hostile">Hostile Colour</label>
+    <div class="form-fields">
+      <color-picker
+        name="hostile"
+        value="{{hostile}}"
+        placeholder="#000000"
+      />
+    </div>
+  </div>
+  <div class="form-group neutral">
+    <label for="neutral">Neutral Colour</label>
+    <div class="form-fields">
+      <color-picker
+        name="neutral"
+        value="{{neutral}}"
+        placeholder="#000000"
+      >
+    </div>
+    </color-picker>
+  </div>
+  <div class="form-group friendly">
+    <label for="friendly">Friendly Colour</label>
+    <div class="form-fields">
+      <color-picker
+        name="friendly"
+        value="{{friendly}}"
+        placeholder="#000000"
+      />
+    </div>
+  </div>
+  {{#if defeated}}
+  <div class="form-group defeated">
+    <label for="defeatedColor">Defeated Colour</label>
+    <div class="form-fields">
+      <color-picker
+        name="defeatedColor"
+        value="{{defeated}}"
+        placeholder="#000000"
+      />
+    </div>
+  </div>
+</section>
+{{/if}}

@@ -1,4 +1,4 @@
-import { CustomColorModel } from "./combat-tracker-disposition";
+import { CustomColorModel } from "./src/module/combat-tracker-disposition";
 
 export { }
 
@@ -19,5 +19,13 @@ declare module "fvtt-types/configuration" {
                 "override": { enabled: boolean, color: string };
             }
         }
+    }
+
+    interface ModuleConfig {
+        "combat-tracker-disposition": {};
+    }
+
+    interface RequiredModules {
+        "combat-tracker-disposition": {};
     }
 }

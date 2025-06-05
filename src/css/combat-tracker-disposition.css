@@ -1,7 +1,7 @@
 .combatant.hover {
   backdrop-filter: brightness(150%) !important;
   z-index: calc(var(--z-index-app) - 1);
-  transition: backdrop-filter .2s;
+  transition: backdrop-filter 0.2s;
 }
 
 div#combat-popout .combatant.hover {
@@ -10,4 +10,10 @@ div#combat-popout .combatant.hover {
 
 .combatant.hidden {
   filter: brightness(75%) !important;
+}
+
+.combat-tracker-disposition.custom-colors .colour-selections {
+  gap: 0.5rem;
+  display: flex;
+  flex-direction: column;
 }
