@@ -41,7 +41,7 @@ export class CustomColorModel extends foundry.abstract.DataModel<DispositionColo
             }),
             opacity: new fields.AlphaField({
                 required: true,
-                initial: 0.4,
+                initial: 0.3,
                 nullable: false
             }),
             defeatedEnabled: new fields.BooleanField({
