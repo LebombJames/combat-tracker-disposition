@@ -169,12 +169,12 @@ Hooks.on("renderCombatantConfig", (app: foundry.applications.api.DocumentSheetV2
     el.addEventListener("submit", async (event) => {
         const html = event.target as HTMLElement;
 
-        if (!html) return;
+        if (!(html && app.document.actor)) return;
 
         const checkbox = html.querySelector<HTMLInputElement>("input[name='color-enabled']");
         const picker = html.querySelector<HTMLColorPickerElement>("color-picker[name='combatant-color']");
 
-        if (!(checkbox && picker && app.document.actor)) return;
+        if (!(checkbox && picker)) return;
 
         const { checked } = checkbox
         const color = picker.value
