@@ -131,48 +131,60 @@ Hooks.on("updateToken", (doc, changes) => {
     updateColors();
 });
 
-Hooks.on("renderCombatantConfig", (app: CombatantConfig, html: HTMLFormElement) => {
-    if (!app.object.actor) return;
+Hooks.on("renderCombatantConfig", (app: foundry.applications.api.DocumentSheetV2<Combatant>, form, context, options) => {
+    if (!(app.document.actor && options.isFirstRender)) return;
 
-    const div = document.createElement("div");
-    div.classList.add("form-group");
+    const formGroup = document.createElement("div");
+    formGroup.classList.add("form-group");
 
     const label = document.createElement("label");
     label.innerHTML = "Colour Override";
+    formGroup.appendChild(label);
 
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
     checkbox.name = "color-enabled";
-    checkbox.checked = app.object.actor.getFlag(MODULE, "override")?.enabled;
+    checkbox.checked = app.document.actor.getFlag(MODULE, "override")?.enabled;
     checkbox.classList.add("form-fields");
 
     const color = HTMLColorPickerElement.create({
         name: "combatant-color",
-        value: app.object.actor.getFlag(MODULE, "override")?.color || "#000000",
+        value: app.document.actor.getFlag(MODULE, "override")?.color || "#000000",
         placeholder: "#000000"
     });
-
     color.classList.add("form-fields");
 
-    div.appendChild(label);
-    div.appendChild(checkbox);
-    div.appendChild(color);
+    const formField = document.createElement("div");
+    formField.classList.add("form-field");
+    formField.appendChild(checkbox);
+    formField.appendChild(color);
 
-    const sumbitButton = html.querySelector<HTMLButtonElement>("button[type=submit]");
-    sumbitButton?.insertAdjacentElement("beforebegin", div);
+    formGroup.appendChild(formField);
+
+    const el = app.element;
+
+    const sumbitButton = el.querySelectorAll<HTMLButtonElement>(".form-group");
+    sumbitButton[sumbitButton.length - 1]?.insertAdjacentElement("afterend", formGroup);
+
+    app.element.addEventListener("submit", async (event) => {
+        const html = event.target as HTMLElement;
+
+        if (!html) return;
+
+        const checkbox = html.querySelector<HTMLInputElement>("input[name='color-enabled']");
+        const picker = html.querySelector<HTMLColorPickerElement>("color-picker[name='combatant-color']");
+
+        if (!(checkbox && picker && app.document.actor)) return;
+
+        const { checked } = checkbox
+        const color = picker.value
+
+        await app.document.actor.setFlag(MODULE, "override", {
+            enabled: checked,
+            color
+        });
+        updateColors();
+    })
 
     app.setPosition({ height: "auto" });
-});
-
-Hooks.on("closeCombatantConfig", async (app: CombatantConfig, html: HTMLFormElement) => {
-    const checkbox = html.querySelector<HTMLInputElement>("input[name=color-enabled]")?.checked;
-    const color = html.querySelector<HTMLColorPickerElement>("color-picker[name=combatant-color]")?.value;
-
-    if (!(checkbox && color && app.object.actor)) return;
-
-    await app.object.actor.setFlag(MODULE, "override", {
-        enabled: checkbox,
-        color
-    });
-    updateColors();
 });

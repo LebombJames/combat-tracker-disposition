@@ -29,7 +29,7 @@ export class CustomColourMenu<
         id: "custom-colours",
         tag: "form",
         window: {
-            title: "Custom Colours",
+            title: "Combat Tracker Disposition Settings",
             contentClasses: ["standard-form"],
             icon: "fas fa-paint-roller"
         },
