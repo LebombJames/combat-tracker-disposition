@@ -61,9 +61,9 @@ export class CustomColorModel extends foundry.abstract.DataModel<DispositionColo
 
 Hooks.on("init", () => {
     game.settings.registerMenu(MODULE, "customColours", {
-        name: "Custom Colours",
-        label: "Configure Custom Colours",
-        hint: "Change the colour of each disposition in the combat tracker.",
+        name: "Combat Tracker Disposition Settings",
+        label: "Configure Settings",
+        hint: "Change disposition colours and opacity.",
         icon: "fas fa-paint-roller",
         type: CustomColourMenu,
         restricted: true

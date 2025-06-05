@@ -3,6 +3,7 @@ import ApplicationV2 = foundry.applications.api.ApplicationV2;
 import { DeepPartial } from "fvtt-types/utils";
 import { dispositionColors, CustomColorModel, MODULE } from "./combat-tracker-disposition";
 import HTMLColorPickerElement = foundry.applications.elements.HTMLColorPickerElement;
+import HTMLRangePickerElement = foundry.applications.elements.HTMLRangePickerElement;
 
 declare namespace CustomColourMenu {
     interface RenderContext extends ApplicationV2.RenderContext {
@@ -10,6 +11,7 @@ declare namespace CustomColourMenu {
         neutral: string,
         friendly: string,
         defeated: string,
+        opacity: number,
         fields: any,
         buttons: ApplicationV2.FormFooterButton[]
     }
@@ -60,6 +62,7 @@ export class CustomColourMenu<
         data.neutral = dispositionColors.neutral.css;
         data.friendly = dispositionColors.friendly.css;
         data.defeated = dispositionColors.defeatedColor.css;
+        data.opacity = dispositionColors.opacity
 
         data.fields = CustomColorModel.schema.fields;
 
@@ -88,6 +91,9 @@ export class CustomColourMenu<
             const picker = div.querySelector<HTMLColorPickerElement>("color-picker");
             if (picker) picker.value = defaults[div.classList[1]];
         }
+
+        const opacity = this.element.querySelector<HTMLRangePickerElement>("range-picker");
+        if (opacity) opacity.value = model.opacity
     }
 
     static async #onSubmit(
