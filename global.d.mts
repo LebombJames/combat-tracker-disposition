@@ -1,6 +1,7 @@
+import { CustomColorAPI } from "./src/module/api";
 import { CustomColorModel } from "./src/module/combat-tracker-disposition";
 
-export { }
+export {};
 
 declare module "fvtt-types/configuration" {
     interface SettingConfig {
@@ -10,19 +11,21 @@ declare module "fvtt-types/configuration" {
         "combat-tracker-disposition.enableDefeated": boolean;
         "combat-tracker-disposition.defeatedColour": string;
         "combat-tracker-disposition.opacity": number;
-        "combat-tracker-disposition.customColorSettings": typeof CustomColorModel
+        "combat-tracker-disposition.customColorSettings": typeof CustomColorModel;
     }
 
     interface FlagConfig {
         Actor: {
             "combat-tracker-disposition": {
-                "override": { enabled: boolean, color: string };
-            }
-        }
+                override: { enabled: boolean; color: string };
+            };
+        };
     }
 
     interface ModuleConfig {
-        "combat-tracker-disposition": {};
+        "combat-tracker-disposition": {
+            api: CustomColorAPI;
+        };
     }
 
     interface RequiredModules {

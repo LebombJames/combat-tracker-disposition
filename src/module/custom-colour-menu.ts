@@ -7,18 +7,18 @@ import HTMLRangePickerElement = foundry.applications.elements.HTMLRangePickerEle
 
 declare namespace CustomColourMenu {
     interface RenderContext extends ApplicationV2.RenderContext {
-        hostile: string,
-        neutral: string,
-        friendly: string,
-        defeated: string,
-        opacity: number,
-        fields: any,
-        buttons: ApplicationV2.FormFooterButton[]
+        hostile: string;
+        neutral: string;
+        friendly: string;
+        defeated: string;
+        opacity: number;
+        fields: any;
+        buttons: ApplicationV2.FormFooterButton[];
     }
 }
 
 export class CustomColourMenu<
-    RenderContext extends CustomColourMenu.RenderContext = CustomColourMenu.RenderContext,
+    RenderContext extends CustomColourMenu.RenderContext = CustomColourMenu.RenderContext
 > extends HandlebarsApplicationMixin(ApplicationV2)<RenderContext> {
     constructor(...args: ConstructorParameters<typeof ApplicationV2>) {
         super(...args);
@@ -35,7 +35,7 @@ export class CustomColourMenu<
         },
         position: {
             width: 400,
-            height: "auto",
+            height: "auto"
         },
         actions: {
             reset: CustomColourMenu.#onClickReset
@@ -48,7 +48,7 @@ export class CustomColourMenu<
 
     static PARTS: Record<string, HandlebarsApplicationMixin.HandlebarsTemplatePart> = {
         main: {
-            template: `modules/combat-tracker-disposition/templates/custom-colours.hbs`,
+            template: `modules/combat-tracker-disposition/templates/custom-colours.hbs`
         },
         footer: {
             template: "templates/generic/form-footer.hbs"
@@ -62,7 +62,7 @@ export class CustomColourMenu<
         data.neutral = dispositionColors.neutral.css;
         data.friendly = dispositionColors.friendly.css;
         data.defeated = dispositionColors.defeatedColor.css;
-        data.opacity = dispositionColors.opacity
+        data.opacity = dispositionColors.opacity;
 
         data.fields = CustomColorModel.schema.fields;
 
@@ -87,21 +87,16 @@ export class CustomColourMenu<
 
         const colourDivs = this.element.querySelector("section.colour-selections")?.children;
 
-        for (const div of (colourDivs ?? [])) {
+        for (const div of colourDivs ?? []) {
             const picker = div.querySelector<HTMLColorPickerElement>("color-picker");
             if (picker) picker.value = defaults[div.classList[1]];
         }
 
         const opacity = this.element.querySelector<HTMLRangePickerElement>("range-picker");
-        if (opacity) opacity.value = model.opacity
+        if (opacity) opacity.value = model.opacity;
     }
 
-    static async #onSubmit(
-        this: CustomColourMenu,
-        event: Event,
-        form: HTMLFormElement,
-        formData: FormDataExtended,
-    ) {
+    static async #onSubmit(this: CustomColourMenu, event: Event, form: HTMLFormElement, formData: FormDataExtended) {
         const data = formData.object;
 
         // @ts-expect-error This works in Foundry

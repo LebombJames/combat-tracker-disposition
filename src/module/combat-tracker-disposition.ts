@@ -5,18 +5,19 @@ import "../css/combat-tracker-disposition.css";
 import HTMLColorPickerElement = foundry.applications.elements.HTMLColorPickerElement;
 import fields = foundry.data.fields;
 import { CustomColourMenu } from "./custom-colour-menu";
+import { CustomColorAPI } from "./api";
 
 type DispositionColorField = fields.ColorField<DispositionColorFieldOptions>;
-type RequiredNonNullable = { required: true, nullable: false };
+type RequiredNonNullable = { required: true; nullable: false };
 type DispositionColorFieldOptions = RequiredNonNullable & { initial: string };
 
 type DispositionColorsSchema = {
-    friendly: DispositionColorField,
-    hostile: DispositionColorField
-    neutral: DispositionColorField,
-    opacity: fields.AlphaField<RequiredNonNullable & { initial: number }>,
-    defeatedEnabled: fields.BooleanField<RequiredNonNullable & { initial: true }>,
-    defeatedColor: DispositionColorField
+    friendly: DispositionColorField;
+    hostile: DispositionColorField;
+    neutral: DispositionColorField;
+    opacity: fields.AlphaField<RequiredNonNullable & { initial: number }>;
+    defeatedEnabled: fields.BooleanField<RequiredNonNullable & { initial: true }>;
+    defeatedColor: DispositionColorField;
 };
 
 export let dispositionColors = {} as CustomColorModel;
@@ -55,7 +56,6 @@ export class CustomColorModel extends foundry.abstract.DataModel<DispositionColo
                 nullable: false
             })
         };
-
     }
 }
 
@@ -79,47 +79,55 @@ Hooks.on("init", () => {
         }
     });
 
-    dispositionColors = game.settings.get("combat-tracker-disposition", "customColorSettings");
+    dispositionColors = game.settings.get(MODULE, "customColorSettings");
+
+    game.modules.get(MODULE).api = new CustomColorAPI();
 });
 
-function getColor(combatant: Combatant, disposition: CONST.TOKEN_DISPOSITIONS) {
+async function getColor(combatant: Combatant, disposition: CONST.TOKEN_DISPOSITIONS) {
     const { opacity } = dispositionColors;
 
     if (combatant.defeated && dispositionColors.defeatedEnabled) return dispositionColors.defeatedColor.toRGBA(opacity);
 
     const actorOverride = combatant.actor?.getFlag(MODULE, "override");
     if (actorOverride?.enabled) return Color.from(actorOverride?.color).toRGBA(opacity);
-    else {
-        switch (disposition) {
-            case -1:
-                return dispositionColors.hostile.toRGBA(opacity);
-            case 0:
-                return dispositionColors.neutral.toRGBA(opacity);
-            case 1:
-                return dispositionColors.friendly.toRGBA(opacity);
-            default:
-                return Color.from("#000000").toRGBA(0);
-        }
+
+    const apiColor = await game.modules.get(MODULE).api.getTopColor(combatant, disposition);
+    if (apiColor !== null) return Color.from(apiColor).toRGBA(opacity);
+
+    switch (disposition) {
+        case -1:
+            return dispositionColors.hostile.toRGBA(opacity);
+        case 0:
+            return dispositionColors.neutral.toRGBA(opacity);
+        case 1:
+            return dispositionColors.friendly.toRGBA(opacity);
+        default:
+            return Color.from("#000000").toRGBA(0);
     }
 }
 
-function updateColors() {
+async function updateColors() {
     // Set the colours when the combat tracker is rendered
     if (!game.combat) return;
 
-    for (const combatant of game.combat.combatants) {
-        if (!combatant.token) continue;
+    const updateLis = async (combatant: Combatant) => {
+        if (!combatant.token) return;
 
         const combatantRows = document.querySelectorAll<HTMLLIElement>(
             `ol.combat-tracker [data-combatant-id="${combatant.id}"]`
         );
 
-        if (combatantRows.length === 0) continue;
+        if (combatantRows.length === 0) return;
 
-        const color = getColor(combatant, combatant.token.disposition);
+        const color = await getColor(combatant, combatant.token.disposition);
         for (const row of combatantRows) {
             row.style.background = color;
         }
+    };
+
+    for (const combatant of game.combat.combatants) {
+        updateLis(combatant);
     }
 }
 
@@ -131,60 +139,63 @@ Hooks.on("updateToken", (doc, changes) => {
     updateColors();
 });
 
-Hooks.on("renderCombatantConfig", (app: foundry.applications.api.DocumentSheetV2<Combatant>, form, context, options) => {
-    if (!(app.document.actor && options.isFirstRender)) return;
+Hooks.on(
+    "renderCombatantConfig",
+    (app: foundry.applications.api.DocumentSheetV2<Combatant>, form, context, options) => {
+        if (!(app.document.actor && options.isFirstRender)) return;
 
-    const formGroup = document.createElement("div");
-    formGroup.classList.add("form-group");
+        const formGroup = document.createElement("div");
+        formGroup.classList.add("form-group");
 
-    const label = document.createElement("label");
-    label.innerHTML = "Colour Override";
-    formGroup.appendChild(label);
+        const label = document.createElement("label");
+        label.innerHTML = "Colour Override";
+        formGroup.appendChild(label);
 
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.name = "color-enabled";
-    checkbox.checked = app.document.actor.getFlag(MODULE, "override")?.enabled;
-    checkbox.classList.add("form-fields");
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.name = "color-enabled";
+        checkbox.checked = app.document.actor.getFlag(MODULE, "override")?.enabled;
+        checkbox.classList.add("form-fields");
 
-    const color = HTMLColorPickerElement.create({
-        name: "combatant-color",
-        value: app.document.actor.getFlag(MODULE, "override")?.color || "#000000",
-        placeholder: "#000000"
-    });
-    color.classList.add("form-fields");
-
-    const formField = document.createElement("div");
-    formField.classList.add("form-field");
-    formField.appendChild(checkbox);
-    formField.appendChild(color);
-
-    formGroup.appendChild(formField);
-
-    const el = app.element;
-
-    const sumbitButton = el.querySelectorAll<HTMLButtonElement>(".form-group");
-    sumbitButton[sumbitButton.length - 1]?.insertAdjacentElement("afterend", formGroup);
-
-    el.addEventListener("submit", async (event) => {
-        const html = event.target as HTMLElement;
-
-        if (!(html && app.document.actor)) return;
-
-        const checkbox = html.querySelector<HTMLInputElement>("input[name='color-enabled']");
-        const picker = html.querySelector<HTMLColorPickerElement>("color-picker[name='combatant-color']");
-
-        if (!(checkbox && picker)) return;
-
-        const { checked } = checkbox
-        const color = picker.value
-
-        await app.document.actor.setFlag(MODULE, "override", {
-            enabled: checked,
-            color
+        const color = HTMLColorPickerElement.create({
+            name: "combatant-color",
+            value: app.document.actor.getFlag(MODULE, "override")?.color || "#000000",
+            placeholder: "#000000"
         });
-        updateColors();
-    })
+        color.classList.add("form-fields");
 
-    app.setPosition({ height: "auto" });
-});
+        const formField = document.createElement("div");
+        formField.classList.add("form-field");
+        formField.appendChild(checkbox);
+        formField.appendChild(color);
+
+        formGroup.appendChild(formField);
+
+        const el = app.element;
+
+        const sumbitButton = el.querySelectorAll<HTMLButtonElement>(".form-group");
+        sumbitButton[sumbitButton.length - 1]?.insertAdjacentElement("afterend", formGroup);
+
+        el.addEventListener("submit", async (event) => {
+            const html = event.target as HTMLElement;
+
+            if (!(html && app.document.actor)) return;
+
+            const checkbox = html.querySelector<HTMLInputElement>("input[name='color-enabled']");
+            const picker = html.querySelector<HTMLColorPickerElement>("color-picker[name='combatant-color']");
+
+            if (!(checkbox && picker)) return;
+
+            const { checked } = checkbox;
+            const color = picker.value;
+
+            await app.document.actor.setFlag(MODULE, "override", {
+                enabled: checked,
+                color
+            });
+            updateColors();
+        });
+
+        app.setPosition({ height: "auto" });
+    }
+);
