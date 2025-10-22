@@ -10,6 +10,7 @@ declare namespace CustomColourMenu {
         hostile: string;
         neutral: string;
         friendly: string;
+        secret: string;
         defeated: string;
         opacity: number;
         fields: any;
@@ -61,6 +62,7 @@ export class CustomColourMenu<
         data.hostile = dispositionColors.hostile.css;
         data.neutral = dispositionColors.neutral.css;
         data.friendly = dispositionColors.friendly.css;
+        data.secret = dispositionColors.secret.css;
         data.defeated = dispositionColors.defeatedColor.css;
         data.opacity = dispositionColors.opacity;
 
@@ -82,6 +84,7 @@ export class CustomColourMenu<
             friendly: model.friendly.css,
             neutral: model.neutral.css,
             hostile: model.hostile.css,
+            secret: model.secret.css,
             defeated: model.defeatedColor.css
         };
 
