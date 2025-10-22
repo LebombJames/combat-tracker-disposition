@@ -14,6 +14,7 @@ type DispositionColorsSchema = {
     friendly: DispositionColorField,
     hostile: DispositionColorField
     neutral: DispositionColorField,
+    secret: DispositionColorField,
     opacity: fields.AlphaField<RequiredNonNullable & { initial: number }>,
     defeatedEnabled: fields.BooleanField<RequiredNonNullable & { initial: true }>,
     defeatedColor: DispositionColorField
@@ -37,6 +38,11 @@ export class CustomColorModel extends foundry.abstract.DataModel<DispositionColo
             neutral: new fields.ColorField({
                 required: true,
                 initial: "#" + CONFIG.Canvas.dispositionColors.NEUTRAL.toString(16),
+                nullable: false
+            }),
+            secret: new fields.ColorField({
+                required: true,
+                initial: "#" + CONFIG.Canvas.dispositionColors.SECRET.toString(16),
                 nullable: false
             }),
             opacity: new fields.AlphaField({
@@ -91,6 +97,8 @@ function getColor(combatant: Combatant, disposition: CONST.TOKEN_DISPOSITIONS) {
     if (actorOverride?.enabled) return Color.from(actorOverride?.color).toRGBA(opacity);
     else {
         switch (disposition) {
+            case -2:
+                return dispositionColors.secret.toRGBA(opacity);
             case -1:
                 return dispositionColors.hostile.toRGBA(opacity);
             case 0:
