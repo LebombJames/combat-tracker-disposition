@@ -110,19 +110,6 @@ async function getColor(combatant: Combatant, disposition: CONST.TOKEN_DISPOSITI
             return dispositionColors.friendly.toRGBA(opacity);
         default:
             return Color.from("#000000").toRGBA(0);
-    else {
-        switch (disposition) {
-            case -2:
-                return dispositionColors.secret.toRGBA(opacity);
-            case -1:
-                return dispositionColors.hostile.toRGBA(opacity);
-            case 0:
-                return dispositionColors.neutral.toRGBA(opacity);
-            case 1:
-                return dispositionColors.friendly.toRGBA(opacity);
-            default:
-                return Color.from("#000000").toRGBA(0);
-        }
     }
 }
 
